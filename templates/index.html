@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Exercise Tracker</title>
+    <style>
+        :root {
+            --bg: #f4f5f6;
+            --surface: #ffffff;
+            --surface-strong: #eef0f2;
+            --text: #111827;
+            --muted: #596273;
+            --border: #d7d9dd;
+            --accent: #3b82f6;
+            --success: #16a34a;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        main {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 24px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .eyebrow {
+            margin: 0 0 8px;
+            color: var(--muted);
+            font-size: 0.85rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(2rem, 2.5vw, 2.75rem);
+            line-height: 1.05;
+        }
+
+        .subtext {
+            margin: 12px 0 0;
+            color: var(--muted);
+            max-width: 640px;
+            line-height: 1.6;
+        }
+
+        .user-badge {
+            padding: 12px 18px;
+            border-radius: 999px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+            margin-bottom: 24px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .summary-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 14px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 20px;
+            border-radius: 16px;
+            background: var(--surface-strong);
+        }
+
+        .summary-item label {
+            color: var(--muted);
+            font-size: 0.88rem;
+            letter-spacing: 0.02em;
+        }
+
+        .summary-item strong {
+            font-size: 1.1rem;
+        }
+
+        .progress-line {
+            height: 10px;
+            border-radius: 999px;
+            background: var(--surface-strong);
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: var(--accent);
+        }
+
+        .chart-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .chart-head p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            max-width: 420px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            gap: 16px;
+        }
+
+        .calendar-title {
+            margin: 0;
+            font-size: 1rem;
+            letter-spacing: 0.02em;
+            color: var(--muted);
+        }
+
+        .month-nav {
+            display: inline-flex;
+            gap: 12px;
+        }
+
+        .month-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 110px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .month-link:hover {
+            border-color: var(--accent);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .weekday {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .day-empty,
+        .day-button {
+            min-height: 82px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            display: grid;
+            place-items: center;
+            background: var(--surface);
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .day-button {
+            cursor: pointer;
+            transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+            text-align: center;
+        }
+
+        .day-button:hover {
+            transform: translateY(-1px);
+            border-color: var(--accent);
+        }
+
+        .day-button.done {
+            background: rgba(59, 130, 246, 0.12);
+            border-color: rgba(59, 130, 246, 0.35);
+        }
+
+        .day-button span {
+            font-weight: 600;
+        }
+
+        .day-button small {
+            display: block;
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 0.75rem;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+
+        .chart-bar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-track {
+            width: 100%;
+            min-height: 140px;
+            border-radius: 18px;
+            background: var(--surface-strong);
+            display: flex;
+            align-items: flex-end;
+            overflow: hidden;
+        }
+
+        .chart-fill {
+            width: 100%;
+            border-radius: 18px 18px 0 0;
+            background: linear-gradient(180deg, var(--accent), #2563eb);
+            transition: height 0.25s ease;
+        }
+
+        .chart-value {
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+
+        .chart-label {
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        .form-card form {
+            display: grid;
+            gap: 14px;
+        }
+
+        .form-card label {
+            font-size: 0.95rem;
+            color: var(--muted);
+        }
+
+        .form-card input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            font-size: 1rem;
+            color: var(--text);
+            background: white;
+        }
+
+        .form-card button {
+            border: none;
+            border-radius: 14px;
+            padding: 14px 18px;
+            background: var(--accent);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .form-card button:hover {
+            background: #2563eb;
+        }
+
+        @media (max-width: 720px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <div>
+                <p class="eyebrow">Daily exercise</p>
+                <h1>Exercise tracker</h1>
+                {% if user.name %}
+                    <p class="subtext">Welcome back, {{ user.name }}. Track your completed days and review monthly progress.</p>
+                {% else %}
+                    <p class="subtext">Enter your name to start tracking exercise days and reviewing performance by month.</p>
+                {% endif %}
+            </div>
+            {% if user.name %}
+                <div class="user-badge">{{ user.name }}</div>
+            {% endif %}
+        </div>
+
+        {% if not user.name %}
+            <section class="card form-card">
+                <h2>Set your name</h2>
+                <p>Start using a personalised exercise tracker with month-based progress and day marking.</p>
+                <form method="post" action="/save-name">
+                    <label for="name">Name</label>
+                    <input id="name" name="name" type="text" placeholder="Your name" required />
+                    <button type="submit">Continue</button>
+                </form>
+            </section>
+        {% else %}
+            <section class="grid-2">
+                <article class="card summary-card">
+                    <h2>Month summary</h2>
+                    <ul class="summary-list">
+                        <li class="summary-item">
+                            <label>Month</label>
+                            <strong>{{ current_month }}</strong>
+                        </li>
+                        <li class="summary-item">
+                            <label>Completed days</label>
+                            <strong>{{ days_done }}/{{ total_days }}</strong>
+                        </li>
+                        <li class="summary-item">
+                            <label>Productivity</label>
+                            <strong>{{ month_progress }}%</strong>
+                        </li>
+                        <li class="summary-item">
+                            <label>Active weeks</label>
+                            <strong>{{ active_weeks }}</strong>
+                        </li>
+                    </ul>
+                    <div class="progress-line">
+                        <div class="progress-fill" style="width: {{ month_progress }}%;"></div>
+                    </div>
+                </article>
+
+                <article class="card activity-card">
+                    <h2>{{ habit.name }}</h2>
+                    <p class="subtext">Tap a date to mark exercise complete. Navigate month by month for a clean, trend-driven view of your ongoing progress.</p>
+                </article>
+            </section>
+
+            <section class="card calendar-card">
+                <div class="calendar-header">
+                    <div>
+                        <p class="calendar-title">{{ current_month }}</p>
+                    </div>
+                    <div class="month-nav">
+                        <a class="month-link" href="/?month={{ prev_month }}">Previous</a>
+                        <a class="month-link" href="/?month={{ next_month }}">Next</a>
+                    </div>
+                </div>
+
+                <div class="calendar-grid">
+                    <div class="weekday">Sun</div>
+                    <div class="weekday">Mon</div>
+                    <div class="weekday">Tue</div>
+                    <div class="weekday">Wed</div>
+                    <div class="weekday">Thu</div>
+                    <div class="weekday">Fri</div>
+                    <div class="weekday">Sat</div>
+                </div>
+
+                <div class="calendar-grid">
+                    {% for week in weeks %}
+                        {% for day in week %}
+                            {% if day %}
+                                <button class="day-button {{ 'done' if day.done else '' }}" data-date="{{ day.date.strftime('%Y-%m-%d') }}">
+                                    <span>{{ day.date.day }}</span>
+                                    {% if day.done %}
+                                        <small>completed</small>
+                                    {% endif %}
+                                </button>
+                            {% else %}
+                                <div class="day-empty"></div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="card chart-card">
+                <div class="chart-head">
+                    <div>
+                        <h2>Monthly activity</h2>
+                    </div>
+                    <p>Each bar shows how many exercise days were recorded in that week. The graph updates for the selected month.</p>
+                </div>
+                <div class="chart-grid">
+                    {% for item in chart_data %}
+                        <div class="chart-bar">
+                            <div class="chart-track">
+                                <div class="chart-fill" style="height: {{ item.percent }}%;"></div>
+                            </div>
+                            <span class="chart-value">{{ item.count }}</span>
+                            <span class="chart-label">{{ item.label }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+    </main>
+
+    <script>
+        document.querySelectorAll('.day-button').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const day = this.dataset.date;
+                fetch('/toggle-day', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ date: day })
+                }).then(function(response) {
+                    if (response.ok) {
+                        window.location.reload();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
